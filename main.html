@@ -39,6 +39,12 @@
             padding: 10px 20px;
             cursor: pointer;
         }
+        #result {
+            margin-top: 20px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -46,13 +52,16 @@
         <h1>Tic-Tac-Toe</h1>
         <div class="board" id="board"></div>
         <button id="clearBoard">Clear Board</button>
+        <h1 id="result"></h1>
     </div>
 
     <script>
         const board = document.getElementById('board');
         const clearButton = document.getElementById('clearBoard');
+        const resultDisplay = document.getElementById('result');
         let gameBoard = Array(9).fill('');
         let currentPlayer = 'O';
+        let gameActive = true;
 
         function createBoard() {
             board.innerHTML = '';
@@ -67,19 +76,13 @@
 
         function handleCellClick(e) {
             const index = e.target.dataset.index;
-            if (gameBoard[index] === '') {
+            if (gameBoard[index] === '' && gameActive) {
                 gameBoard[index] = currentPlayer;
                 e.target.textContent = currentPlayer;
                 if (checkWinner()) {
-                    setTimeout(() => {
-                        alert(`${currentPlayer} wins!`);
-                        clearBoard();
-                    }, 100);
+                    endGame(`${currentPlayer} wins!`);
                 } else if (gameBoard.every(cell => cell !== '')) {
-                    setTimeout(() => {
-                        alert("It's a tie!");
-                        clearBoard();
-                    }, 100);
+                    endGame("It's a tie!");
                 } else {
                     currentPlayer = 'X';
                     setTimeout(aiMove, 500);
@@ -88,19 +91,14 @@
         }
 
         function aiMove() {
+            if (!gameActive) return;
             const bestMove = minimax(gameBoard, 0, true);
             gameBoard[bestMove.index] = 'X';
             document.querySelector(`[data-index="${bestMove.index}"]`).textContent = 'X';
             if (checkWinner()) {
-                setTimeout(() => {
-                    alert('X wins!');
-                    clearBoard();
-                }, 100);
+                endGame('X wins!');
             } else if (gameBoard.every(cell => cell !== '')) {
-                setTimeout(() => {
-                    alert("It's a tie!");
-                    clearBoard();
-                }, 100);
+                endGame("It's a tie!");
             } else {
                 currentPlayer = 'O';
             }
@@ -159,12 +157,19 @@
             }
         }
 
+        function endGame(message) {
+            gameActive = false;
+            resultDisplay.textContent = message;
+        }
+
         function clearBoard() {
             gameBoard = Array(9).fill('');
             currentPlayer = 'O';
+            gameActive = true;
             document.querySelectorAll('.cell').forEach(cell => {
                 cell.textContent = '';
             });
+            resultDisplay.textContent = '';
         }
 
         clearButton.addEventListener('click', clearBoard);
